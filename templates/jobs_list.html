@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block title %}Ofertas Laborales{% endblock %}
+
+{% block header_title %}Ofertas Laborales Disponibles{% endblock %} {# Título para el header del contenido principal #}
+
+{% block content %}
+    {# <h2>Ofertas Laborales Disponibles</h2> #} {# Movido a header_title o puedes mantenerlo si prefieres #}
+
+    {% if ofertas %}
+        <div class="job-listings">
+            {% for oferta in ofertas %}
+                <div class="job-card">
+                    <h3>{{ oferta.titulo_oferta }}</h3>
+                    <p><strong>Empresa:</strong> {{ oferta.empresa_nombre if oferta.empresa_nombre else 'No especificada' }}</p>
+                    <p><strong>Ubicación:</strong> {{ oferta.ubicacion if oferta.ubicacion else 'No especificada' }}</p>
+                    <p><strong>Publicado:</strong> 
+                        {% if oferta.fecha_publicacion %}
+                            {# Intentar formatear si es un objeto datetime, si no, mostrar como string #}
+                            {% if oferta.fecha_publicacion.strftime %}
+                                {{ oferta.fecha_publicacion.strftime('%d-%m-%Y %H:%M') }}
+                            {% else %}
+                                {{ oferta.fecha_publicacion }}
+                            {% endif %}
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </p>
+                    <div class="job-description">
+                        <h4>Descripción y Requisitos:</h4>
+                        <p>{{ (oferta.descripcion_completa_oferta[:300] + '...') if oferta.descripcion_completa_oferta|length > 300 else oferta.descripcion_completa_oferta }}</p>
+                    </div>
+                    </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No hay ofertas laborales activas en este momento.</p>
+    {% endif %}
+
+    <p><a href="{{ url_for('dashboard') }}" class="btn btn-primary">Volver al Dashboard</a></p>
+
+{% endblock %}

@@ -1,0 +1,133 @@
+{% extends "layout.html" %}
+
+{% block title %}{% if perfil and perfil.habilidades_texto %}Editar Perfil{% else %}Completar Perfil{% endif %} Profesional{% endblock %}
+
+{% block header_title %}Mi Perfil Profesional{% endblock %}
+
+{% block content %}
+<form method="post" id="profile-form">
+    <section>
+        <h2>Información Personal</h2>
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="nombre_completo_display">Nombres y Apellidos:</label>
+                <input type="text" id="nombre_completo_display" name="nombre_completo_display" value="{{ g.user.nombre_completo }}" readonly style="background-color:#e9ecef; font-weight: bold;">
+            </div>
+            <div class="form-group">
+                <label for="email_display">Correo Electrónico:</label>
+                <input type="email" id="email_display" name="email_display" value="{{ g.user.email }}" readonly style="background-color:#e9ecef;">
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" placeholder="Ingrese su teléfono" value="{{ perfil.telefono if perfil and perfil.telefono is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="linkedin">Perfil LinkedIn (opcional):</label>
+                <input type="url" id="linkedin" name="linkedin" placeholder="https://linkedin.com/in/tuperfil" value="{{ perfil.link_linkedin if perfil and perfil.link_linkedin is not none else '' }}">
+            </div>
+            <div class="form-group">
+                <label for="github">Perfil GitHub (opcional):</label>
+                <input type="url" id="github" name="github" placeholder="https://github.com/tuperfil" value="{{ perfil.link_github if perfil and perfil.link_github is not none else '' }}">
+            </div>
+        </div>
+    </section>
+
+    <section id="educacion-section">
+        <h2>Educación</h2>
+        <div class="form-group">
+            <label for="formacion_texto">Formación Académica (institución, título, año; puede añadir varias líneas):</label>
+            <textarea id="formacion_texto" name="formacion_texto" rows="4" placeholder="Ej: USMP - Ing. Computación y Sistemas (2023);&#10;Certificación AWS Cloud Practitioner (2024);&#10;Curso Python Avanzado - Platzi (2022)">{{ perfil.formacion_texto if perfil and perfil.formacion_texto is not none else request.form.formacion_texto }}</textarea>
+        </div>
+    </section>
+
+    <section id="experiencia-section">
+        <h2>Experiencia Laboral</h2>
+        <div class="form-group">
+            <label for="experiencia_texto">Experiencia Laboral (puesto, empresa, fechas, descripción; puede añadir varias experiencias):</label>
+            <textarea name="experiencia_texto" id="experiencia_texto" rows="8" placeholder="Ej: Desarrollador en Empresa ABC (Ene 2022-Dic 2023) - Creación de API REST.&#10;Analista de datos en Proyecto XYZ (Mar 2021-Dic 2021) - Limpieza y visualización de datos.">{{ perfil.experiencia_texto if perfil and perfil.experiencia_texto is not none else request.form.experiencia_texto }}</textarea>
+        </div>
+    </section>
+
+    <section>
+        <h2>Habilidades</h2>
+        <div class="form-group">
+            <label for="habilidades_texto">Habilidades Técnicas y Blandas (separadas por coma):</label>
+            <textarea id="habilidades_texto" name="habilidades_texto" rows="5" placeholder="Ej: Python, Java, SQL, React, AWS, Docker, Power BI, Comunicación, Trabajo en Equipo, Resolución de Problemas...">{{ perfil.habilidades_texto if perfil and perfil.habilidades_texto is not none else request.form.habilidades_texto }}</textarea>
+        </div>
+    </section>
+    
+    <section>
+        <h2>Preferencias Laborales</h2>
+        <div class="form-group">
+            <label for="preferencias_texto">Preferencias (áreas de interés, tipo de rol, modalidad):</label>
+            <textarea name="preferencias_texto" id="preferencias_texto" rows="4" placeholder="Ej: Desarrollo backend, Data Science, roles remotos o híbridos en Lima.">{{ perfil.preferencias_texto if perfil and perfil.preferencias_texto is not none else request.form.preferencias_texto }}</textarea>
+        </div>
+    </section>
+
+    <button type="submit" id="guardar-perfil-btn" class="btn btn-primary">{% if perfil and perfil.habilidades_texto is not none %}Actualizar Perfil{% else %}Guardar Perfil{% endif %}</button>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancelar</a>
+    <span id="mensaje-guardado" style="margin-left: 15px; color: green; display: none;">¡Perfil guardado!</span>
+</form>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const userInitialsDiv = document.getElementById('user-initials');
+            const nombreCompleto = "{{ g.user.nombre_completo if g.user else '' }}";
+            if (nombreCompleto && userInitialsDiv) {
+                const partes = nombreCompleto.split(' ');
+                let iniciales = partes[0] ? partes[0][0] : '';
+                if (partes.length > 1 && partes[1] && partes[1].length > 0) { // Asegurarse que la segunda parte exista y no esté vacía
+                    iniciales += partes[1][0];
+                } else if (partes[0] && partes[0].length > 1) { // Si solo hay una palabra, tomar las dos primeras letras si es posible
+                     iniciales = partes[0].substring(0,2);
+                }
+                userInitialsDiv.textContent = iniciales.toUpperCase() || '?';
+            }
+
+            const profileForm = document.getElementById('profile-form');
+            const completenessIndicator = document.getElementById('profile-completeness-indicator');
+            
+            function updateCompleteness() {
+                if (!profileForm || !completenessIndicator) return;
+
+                let filledCount = 0;
+                const fieldsToCount = [
+                    profileForm.querySelector('#formacion_texto'),
+                    profileForm.querySelector('#experiencia_texto'),
+                    profileForm.querySelector('#habilidades_texto'),
+                    profileForm.querySelector('#preferencias_texto'),
+                    profileForm.querySelector('#telefono') // Contamos teléfono también
+                ];
+                
+                let totalFields = fieldsToCount.filter(f => f !== null).length;
+
+                fieldsToCount.forEach(field => {
+                    if (field && field.value && field.value.trim() !== '') {
+                        filledCount++;
+                    }
+                });
+
+                const percentage = totalFields > 0 ? Math.round((filledCount / totalFields) * 100) : 0;
+                completenessIndicator.textContent = `Perfil: ${percentage}%`;
+                if (percentage < 50) {
+                    completenessIndicator.style.color = '#dc3545'; // Rojo
+                    completenessIndicator.style.backgroundColor = '#f8d7da';
+                } else if (percentage < 85) {
+                    completenessIndicator.style.color = '#ffc107'; // Naranja/Amarillo
+                    completenessIndicator.style.backgroundColor = '#fff3cd';
+                } else {
+                    completenessIndicator.style.color = '#28a745'; // Verde
+                    completenessIndicator.style.backgroundColor = '#d4edda';
+                }
+            }
+
+            if (profileForm) {
+                const formElements = profileForm.querySelectorAll('input, textarea');
+                formElements.forEach(el => el.addEventListener('input', updateCompleteness));
+                updateCompleteness(); // Initial check
+            }
+        });
+    </script>
+{% endblock %}

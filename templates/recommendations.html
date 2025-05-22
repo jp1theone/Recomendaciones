@@ -1,0 +1,32 @@
+{% extends "layout.html" %}
+
+{% block title %}Mis Recomendaciones{% endblock %}
+
+{% block header_title %}Mis Recomendaciones de Empleo{% endblock %} {# Título para el header del contenido principal #}
+
+{% block content %}
+    {# <h2>Mis Recomendaciones de Empleo</h2> #} {# Movido a header_title o puedes mantenerlo si prefieres #}
+
+    {% if recomendaciones and recomendaciones|length > 0 %}
+        <div class="job-listings">
+            {% for rec in recomendaciones %}
+                <div class="job-card">
+                    <h3>{{ rec.titulo_oferta }}</h3>
+                    <p><strong>Empresa:</strong> {{ rec.empresa_nombre if rec.empresa_nombre else 'N/A' }}</p>
+                    <p><strong>Ubicación:</strong> {{ rec.ubicacion if rec.ubicacion else 'N/A' }}</p>
+                    <p><strong>Score de Similitud:</strong> 
+                        {{ "%.0f"|format(rec.score_similitud * 100) if rec.score_similitud is defined and rec.score_similitud is not none else 'N/A' }}%
+                    </p>
+                    <div class="job-description">
+                        <h4>Descripción:</h4>
+                        <p>{{ (rec.descripcion_completa_oferta[:200] + '...') if rec.descripcion_completa_oferta|length > 200 else rec.descripcion_completa_oferta }}</p>
+                    </div>
+                    </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>Aún no tenemos recomendaciones para ti o la funcionalidad de Machine Learning está en desarrollo.</p>
+        <p>Asegúrate de que tu <a href="{{ url_for('profile') }}">perfil profesional</a> esté completo y actualizado para recibir las mejores sugerencias.</p>
+    {% endif %}
+    <p><a href="{{ url_for('dashboard') }}" class="btn btn-primary">Volver al Dashboard</a></p>
+{% endblock %}

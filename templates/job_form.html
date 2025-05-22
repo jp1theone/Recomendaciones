@@ -1,0 +1,33 @@
+{% extends "layout.html" %}
+
+{% block title %}Añadir Oferta Laboral{% endblock %}
+
+{% block header_title %}Publicar Nueva Oferta Laboral{% endblock %}
+
+{% block content %}
+    <div class="form-container" style="max-width: 700px;"> {# Un poco más ancho para este form #}
+        {# <h2>Publicar Nueva Oferta Laboral</h2> #} {# Movido a header_title #}
+        <form method="post">
+            <div class="form-group">
+                <label for="titulo_oferta">Título de la Oferta:</label>
+                <input type="text" name="titulo_oferta" id="titulo_oferta" value="{{ request.form.titulo_oferta }}" required>
+            </div>
+            <div class="form-group">
+                <label for="empresa_nombre">Nombre de la Empresa (opcional):</label>
+                <input type="text" name="empresa_nombre" id="empresa_nombre" value="{{ request.form.empresa_nombre }}">
+            </div>
+            <div class="form-group">
+                <label for="ubicacion">Ubicación (Ej: Lima, Perú (Híbrido), Remoto):</label>
+                <input type="text" name="ubicacion" id="ubicacion" value="{{ request.form.ubicacion }}">
+            </div>
+            <div class="form-group">
+                <label for="descripcion_completa_oferta">Descripción Completa y Requisitos:</label>
+                <textarea name="descripcion_completa_oferta" id="descripcion_completa_oferta" rows="10" placeholder="Incluye responsabilidades, requisitos, habilidades deseadas, beneficios, etc." required>{{ request.form.descripcion_completa_oferta }}</textarea>
+                <small>Este texto se usará para que el sistema de Machine Learning encuentre coincidencias con los perfiles de los egresados.</small>
+            </div>
+            
+            <button type="submit" class="btn btn-primary">Publicar Oferta</button>
+            <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Cancelar</a>
+        </form>
+    </div>
+{% endblock %}
